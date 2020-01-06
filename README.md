@@ -1,6 +1,7 @@
 # Voice-Conversion-with-TF2.0
-Non-pararell Voice Conversion with CycleGANVC2.
+
 Hideo Kodama
+
 NIT Asahikawa college
 
 ## Dependencies
