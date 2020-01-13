@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import pickle
+import os
 import hyperparameter as hp
 from utils import l1_loss, l2_loss
 from model import CycleGAN2
@@ -134,7 +135,7 @@ if __name__ == '__main__':
             train_step([dataset_A[start:end], dataset_B[start:end]])
 
             if iteration % 2500 == 0:
-                model.save_weights('weights_{:}'.format(iteration))
+                model.save_weights(os.path.join(hp.logdir, 'weights_{:}'.format(iteration)))
 
             iteration += 1
 
