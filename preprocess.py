@@ -85,35 +85,66 @@ def coded_sps_normalization_fit_transoform(coded_sps):
     return coded_sps_normalized, coded_sps_mean, coded_sps_std
 
 
-wavs_A = load_wavs('./datasets/my_voice')
-wavs_B = load_wavs('./datasets/target_voice')
+def world_speech_synthesis(f0, decoded_sp, ap, fs, frame_period):
+    # decoded_sp = decoded_sp.astype(np.float64)
+    wav = pyworld.synthesize(f0, decoded_sp, ap, fs, frame_period)
+    # Librosa could not save wav if not doing so
+    wav = wav.astype(np.float32)
 
-print('Extracting acoustic features...')
+    return wav
 
-f0s_A, timeaxes_A, sps_A, aps_A, coded_sps_A = world_encode_data(wavs_A, fs=hp.rate, coded_dim=hp.num_mceps)
-f0s_B, timeaxes_B, sps_B, aps_B, coded_sps_B = world_encode_data(wavs_B, fs=hp.rate, coded_dim=hp.num_mceps)
 
-log_f0s_mean_A, log_f0s_std_A = logf0_statistics(f0s_A)
-log_f0s_mean_B, log_f0s_std_B = logf0_statistics(f0s_B)
+def wav_padding(wav, sr, frame_period, multiple=4):
+    assert wav.ndim == 1
+    num_frames = len(wav)
+    num_frames_padded = int(
+        (np.ceil((np.floor(num_frames / (sr * frame_period / 1000)) + 1) / multiple + 1) * multiple - 1) * (
+                sr * frame_period / 1000))
+    num_frames_diff = num_frames_padded - num_frames
+    num_pad_left = num_frames_diff // 2
+    num_pad_right = num_frames_diff - num_pad_left
+    wav_padded = np.pad(wav, (num_pad_left, num_pad_right), 'constant', constant_values=0)
 
-print('Log Pitch A')
-print('Mean: %f, Std: %f' % (log_f0s_mean_A, log_f0s_std_A))
-print('Log Pitch B')
-print('Mean: %f, Std: %f' % (log_f0s_mean_B, log_f0s_std_B))
+    return wav_padded
 
-coded_sps_A_transposed = transpose_in_list(lst=coded_sps_A)
-coded_sps_B_transposed = transpose_in_list(lst=coded_sps_B)
 
-coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std = coded_sps_normalization_fit_transoform(
-    coded_sps=coded_sps_A_transposed)
-coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std = coded_sps_normalization_fit_transoform(
-    coded_sps=coded_sps_B_transposed)
+def pitch_conversion(f0, mean_log_src, std_log_src, mean_log_target, std_log_target):
+    # Logarithm Gaussian normalization for Pitch Conversions
+    f0_converted = np.exp((np.ma.log(f0) - mean_log_src) / std_log_src * std_log_target + mean_log_target)
 
-print('Saving...')
-with open('./datasets/my_voice/my_voice.p', 'wb') as f:
-    pickle.dump((coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A), f)
+    return f0_converted
 
-with open('./datasets/target_voice/target_voice.p', 'wb') as f:
-    pickle.dump((coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B), f)
 
-print('Done')
+if __name__ == '__main__':
+    wavs_A = load_wavs('./datasets/my_voice')
+    wavs_B = load_wavs('./datasets/target_voice')
+
+    print('Extracting acoustic features...')
+
+    f0s_A, timeaxes_A, sps_A, aps_A, coded_sps_A = world_encode_data(wavs_A, fs=hp.rate, coded_dim=hp.num_mceps)
+    f0s_B, timeaxes_B, sps_B, aps_B, coded_sps_B = world_encode_data(wavs_B, fs=hp.rate, coded_dim=hp.num_mceps)
+
+    log_f0s_mean_A, log_f0s_std_A = logf0_statistics(f0s_A)
+    log_f0s_mean_B, log_f0s_std_B = logf0_statistics(f0s_B)
+
+    print('Log Pitch A')
+    print('Mean: %f, Std: %f' % (log_f0s_mean_A, log_f0s_std_A))
+    print('Log Pitch B')
+    print('Mean: %f, Std: %f' % (log_f0s_mean_B, log_f0s_std_B))
+
+    coded_sps_A_transposed = transpose_in_list(lst=coded_sps_A)
+    coded_sps_B_transposed = transpose_in_list(lst=coded_sps_B)
+
+    coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std = coded_sps_normalization_fit_transoform(
+        coded_sps=coded_sps_A_transposed)
+    coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std = coded_sps_normalization_fit_transoform(
+        coded_sps=coded_sps_B_transposed)
+
+    print('Saving...')
+    with open('./datasets/my_voice/my_voice.p', 'wb') as f:
+        pickle.dump((coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A), f)
+
+    with open('./datasets/target_voice/target_voice.p', 'wb') as f:
+        pickle.dump((coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B), f)
+
+    print('Done')
