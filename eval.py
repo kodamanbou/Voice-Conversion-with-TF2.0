@@ -20,7 +20,7 @@ def seg_and_pad(src, n_frames):
 
 
 model = CycleGAN2()
-latest = tf.train.latest_checkpoint('.')
+latest = tf.train.latest_checkpoint(hp.logdir)
 model.load_weights(latest)
 
 print('Loading cached data...')
@@ -30,7 +30,7 @@ with open('./datasets/my_voice/my_voice.p', 'rb') as f:
 with open('./datasets/target_voice/target_voice.p', 'rb') as f:
     coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
-wav, _ = librosa.load('./datasets/my_voice/voice12.wav', sr=hp.rate)
+wav, _ = librosa.load('./datasets/my_voice/voice11.wav', sr=hp.rate)
 wav = wav_padding(wav, hp.rate, hp.duration)
 f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
 f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
