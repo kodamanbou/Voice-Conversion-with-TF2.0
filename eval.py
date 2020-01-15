@@ -33,12 +33,8 @@ with open('./datasets/target_voice/target_voice.p', 'rb') as f:
     coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
 wav, _ = librosa.load('./datasets/target_voice/voice28.wav', sr=hp.rate)
-# wav = wav_padding(wav, hp.rate, hp.duration)
+wav = wav_padding(wav, hp.rate, hp.duration)
 f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
-plt.figure(figsize=(12, 8))
-display.specshow(sp, x_axis='time', y_axis='log')
-plt.tight_layout()
-plt.show()
 f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
 coded_sp = world_encode_spectral_envelop(sp, hp.rate, hp.num_mceps)
 coded_sp_transposed = coded_sp.T
@@ -64,3 +60,10 @@ for sp_norm in coded_sp_norm:
 
 wav_forms = np.concatenate(wav_forms)
 librosa.output.write_wav('./outputs/test.wav', wav_forms, hp.rate)
+
+test_wav, _ = librosa.load('./outputs/test.wav', sr=hp.rate)
+D = librosa.amplitude_to_db(np.abs(librosa.stft(test_wav)), ref=np.max)
+plt.figure(figsize=(12, 8))
+display.specshow(D, x_axis='time', y_axis='log')
+plt.colorbar(format='%+2.0f dB')
+plt.show()
