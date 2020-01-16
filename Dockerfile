@@ -10,7 +10,8 @@ RUN apt-get install git \
 RUN pip3 install librosa \
                  pyworld \
                  matplotlib \
-                 tqdm
+                 tqdm \
+                 tensorflow-addons
 
 RUN git clone https://github.com/kodamanbou/Voice-Conversion-with-TF2.0.git
 WORKDIR ./Voice-Conversion-with-TF2.0
