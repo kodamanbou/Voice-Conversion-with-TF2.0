@@ -4,7 +4,8 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install git \
                     zip \
                     unzip \
-                    ffmpeg
+                    ffmpeg \
+                    nano
 
 RUN pip3 install librosa \
                  pyworld \
@@ -16,4 +17,6 @@ WORKDIR ./Voice-Conversion-with-TF2.0
 
 COPY datasets.zip .
 RUN unzip -d datasets datasets.zip
+RUN mkdir outputs
+RUN mkdir logdir
 EXPOSE 6006:6006
