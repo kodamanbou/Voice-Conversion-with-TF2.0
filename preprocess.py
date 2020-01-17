@@ -61,7 +61,12 @@ def world_encode_data(wavs, fs, coded_dim=24):
 def transpose_in_list(lst):
     transposed_lst = list()
     for array in lst:
-        transposed_lst.append(array.T)
+        t_array = array.T
+        if np.shape(t_array)[1] < hp.n_frames:
+            print(np.shape(t_array))
+        else:
+            transposed_lst.append(t_array)
+
     return transposed_lst
 
 
