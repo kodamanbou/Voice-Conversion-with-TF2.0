@@ -22,8 +22,8 @@ def seg_and_pad(src, n_frames):
 
 
 model = CycleGAN2()
-# latest = tf.train.latest_checkpoint(hp.logdir)
-# model.load_weights(latest)
+latest = tf.train.latest_checkpoint(hp.logdir)
+model.load_weights(latest)
 
 print('Loading cached data...')
 with open('./datasets/my_voice/my_voice.p', 'rb') as f:
