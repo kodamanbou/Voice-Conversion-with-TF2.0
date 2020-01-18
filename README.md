@@ -7,10 +7,16 @@ NIT Asahikawa college
 ## Dependencies
 Python 3.7
 
-Tensorflow 2.0
+tensorflow==2.0.0
+
+tensorflow-addons==0.6.0
 
 ffmpeg
 
 librosa
 
-PyWorld
+pyworld
+
+## Papers
+[CycleGAN-VC](http://www.kecl.ntt.co.jp/people/kaneko.takuhiro/projects/cyclegan-vc/index.html)
+[CycleGAN-VC2](http://www.kecl.ntt.co.jp/people/kaneko.takuhiro/projects/cyclegan-vc2/index.html)
