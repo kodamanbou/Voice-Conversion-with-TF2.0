@@ -136,8 +136,6 @@ if __name__ == '__main__':
 
             if iteration > 10000:
                 hp.lambda_identity = 0
-            else:
-                hp.lambda_identity = 10
 
             if iteration % 2500 == 0:
                 model.save_weights(os.path.join(hp.logdir, 'weights_{:}'.format(iteration)))
