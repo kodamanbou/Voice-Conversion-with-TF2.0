@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import os
 import pickle
 import librosa
 from librosa import display
@@ -59,6 +60,8 @@ for sp_norm in coded_sp_norm:
     wav_forms.append(wav_transformed)
 
 wav_forms = np.concatenate(wav_forms)
+if not os.path.exists('outputs'):
+    os.mkdir('outputs')
 librosa.output.write_wav('./outputs/test.wav', wav_forms, hp.rate)
 
 test_wav, _ = librosa.load('./outputs/test.wav', sr=hp.rate)
