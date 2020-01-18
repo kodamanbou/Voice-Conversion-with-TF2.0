@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.0.0-gpu-py3
+FROM nvidia/cuda:10.0-base-ubuntu18.04
 
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install git \
@@ -11,7 +11,8 @@ RUN pip3 install librosa \
                  pyworld \
                  matplotlib \
                  tqdm \
-                 tensorflow-addons
+                 tensorflow-gpu==2.0.0 \
+                 tensorflow-addons==0.6.0
 
 RUN git clone https://github.com/kodamanbou/Voice-Conversion-with-TF2.0.git
 WORKDIR ./Voice-Conversion-with-TF2.0
