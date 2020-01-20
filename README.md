@@ -21,3 +21,6 @@ pyworld
 [CycleGAN-VC](http://www.kecl.ntt.co.jp/people/kaneko.takuhiro/projects/cyclegan-vc/index.html)
 
 [CycleGAN-VC2](http://www.kecl.ntt.co.jp/people/kaneko.takuhiro/projects/cyclegan-vc2/index.html)
+
+## Acknowledgements
+Implementation of CycleGAN-VC based on: [leimao/Voice_Converter_CycleGAN](https://github.com/leimao/Voice_Converter_CycleGAN)
