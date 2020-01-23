@@ -33,7 +33,7 @@ with open('./datasets/my_voice/my_voice.p', 'rb') as f:
 with open('./datasets/target_voice/target_voice.p', 'rb') as f:
     coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
-wav, _ = librosa.load('./datasets/target_voice/voice28.wav', sr=hp.rate)
+wav, _ = librosa.load('./datasets/my_voice/voice12.wav', sr=hp.rate)
 wav = wav_padding(wav, hp.rate, hp.duration)
 f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
 f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
@@ -43,20 +43,15 @@ coded_sp_norm = (coded_sp_transposed - coded_sps_A_mean) / coded_sps_A_std
 coded_sp_norm = seg_and_pad(coded_sp_norm, hp.n_frames)
 
 wav_forms = []
-for sp_norm in coded_sp_norm:
+for i, sp_norm in enumerate(coded_sp_norm):
     sp_norm = np.expand_dims(sp_norm, axis=-1)
     coded_sp_converted_norm = model([sp_norm, sp_norm])[0][0]
-    if coded_sp_converted_norm.shape[1] > len(f0):
-        coded_sp_converted_norm = coded_sp_converted_norm[:, :-1]
-    elif coded_sp_converted_norm.shape[1] < len(f0):
-        f0_converted = f0_converted[:coded_sp_converted_norm.shape[1]]
-        ap = ap[:coded_sp_converted_norm.shape[1]]
-
     coded_sp_converted = coded_sp_converted_norm * coded_sps_B_std + coded_sps_B_mean
     coded_sp_converted = np.array(coded_sp_converted, dtype=np.float64).T
     coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
     decode_sp_converted = world_decode_spectral_envelop(coded_sp_converted, hp.rate)
-    wav_transformed = world_speech_synthesis(f0_converted, decode_sp_converted, ap, hp.rate, hp.duration)
+    wav_transformed = world_speech_synthesis(f0_converted[i * hp.n_frames:(i + 1) * hp.n_frames], decode_sp_converted,
+                                             ap[i * hp.n_frames:(i + 1) * hp.n_frames], hp.rate, hp.duration)
     wav_forms.append(wav_transformed)
 
 wav_forms = np.concatenate(wav_forms)
