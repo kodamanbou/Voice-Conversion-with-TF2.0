@@ -33,7 +33,7 @@ with open('./datasets/my_voice/my_voice.p', 'rb') as f:
 with open('./datasets/target_voice/target_voice.p', 'rb') as f:
     coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
-wav, _ = librosa.load('./datasets/my_voice/voice12.wav', sr=hp.rate)
+wav, _ = librosa.load('./datasets/my_voice/voice64.wav', sr=hp.rate)
 wav = wav_padding(wav, hp.rate, hp.duration)
 f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
 f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
@@ -50,8 +50,18 @@ for i, sp_norm in enumerate(coded_sp_norm):
     coded_sp_converted = np.array(coded_sp_converted, dtype=np.float64).T
     coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
     decode_sp_converted = world_decode_spectral_envelop(coded_sp_converted, hp.rate)
-    wav_transformed = world_speech_synthesis(f0_converted[i * hp.n_frames:(i + 1) * hp.n_frames], decode_sp_converted,
-                                             ap[i * hp.n_frames:(i + 1) * hp.n_frames], hp.rate, hp.duration)
+    if len(f0) < (i + 1) * hp.output_size:
+        decode_sp_converted = decode_sp_converted[:len(f0) % hp.output_size]
+        f0_piece = f0_converted[i * hp.output_size:i * hp.output_size + len(f0) % hp.output_size]
+        ap_piece = ap[i * hp.output_size:i * hp.output_size + len(f0) % hp.output_size]
+        wav_transformed = world_speech_synthesis(f0_piece, decode_sp_converted, ap_piece, hp.rate, hp.duration)
+        wav_forms.append(wav_transformed)
+        break
+    else:
+        f0_piece = f0_converted[i * hp.output_size:(i + 1) * hp.output_size]
+        ap_piece = ap[i * hp.output_size:(i + 1) * hp.output_size]
+
+    wav_transformed = world_speech_synthesis(f0_piece, decode_sp_converted, ap_piece, hp.rate, hp.duration)
     wav_forms.append(wav_transformed)
 
 wav_forms = np.concatenate(wav_forms)
@@ -64,4 +74,4 @@ D = librosa.amplitude_to_db(np.abs(librosa.stft(test_wav)), ref=np.max)
 plt.figure(figsize=(12, 8))
 display.specshow(D, x_axis='time', y_axis='log')
 plt.colorbar(format='%+2.0f dB')
-plt.show()
+plt.savefig('outputs/fig.png')
