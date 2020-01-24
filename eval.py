@@ -7,7 +7,7 @@ from librosa import display
 import matplotlib.pyplot as plt
 from model import CycleGAN2
 import hyperparameter as hp
-from preprocess import wav_padding, pitch_conversion, world_speech_synthesis
+from preprocess import pitch_conversion, world_speech_synthesis
 from preprocess import world_decompose, world_encode_spectral_envelop, world_decode_spectral_envelop
 
 
@@ -34,7 +34,6 @@ with open('./datasets/target_voice/target_voice.p', 'rb') as f:
     coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
 wav, _ = librosa.load('./datasets/my_voice/voice64.wav', sr=hp.rate)
-wav = wav_padding(wav, hp.rate, hp.duration)
 f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
 f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
 coded_sp = world_encode_spectral_envelop(sp, hp.rate, hp.num_mceps)
