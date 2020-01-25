@@ -44,7 +44,7 @@ coded_sp_norm = seg_and_pad(coded_sp_norm, hp.n_frames)
 wav_forms = []
 for i, sp_norm in enumerate(coded_sp_norm):
     sp_norm = np.expand_dims(sp_norm, axis=-1)
-    coded_sp_converted_norm = model([sp_norm, sp_norm])[0][0]
+    coded_sp_converted_norm = model([sp_norm, sp_norm])[1][0]
     coded_sp_converted = coded_sp_converted_norm * coded_sps_B_std + coded_sps_B_mean
     coded_sp_converted = np.array(coded_sp_converted, dtype=np.float64).T
     coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
