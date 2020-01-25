@@ -128,30 +128,38 @@ if __name__ == '__main__':
 
     f0s_A, timeaxes_A, sps_A, aps_A, coded_sps_A = world_encode_data(wavs_A, fs=hp.rate, coded_dim=hp.num_mceps)
     del wavs_A
-    f0s_B, timeaxes_B, sps_B, aps_B, coded_sps_B = world_encode_data(wavs_B, fs=hp.rate, coded_dim=hp.num_mceps)
-    del wavs_B
 
     log_f0s_mean_A, log_f0s_std_A = logf0_statistics(f0s_A)
-    log_f0s_mean_B, log_f0s_std_B = logf0_statistics(f0s_B)
-
+    del f0s_A
     print('Log Pitch A')
     print('Mean: %f, Std: %f' % (log_f0s_mean_A, log_f0s_std_A))
-    print('Log Pitch B')
-    print('Mean: %f, Std: %f' % (log_f0s_mean_B, log_f0s_std_B))
 
     coded_sps_A_transposed = transpose_in_list(lst=coded_sps_A)
-    coded_sps_B_transposed = transpose_in_list(lst=coded_sps_B)
-
     coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std = coded_sps_normalization_fit_transoform(
         coded_sps=coded_sps_A_transposed)
-    coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std = coded_sps_normalization_fit_transoform(
-        coded_sps=coded_sps_B_transposed)
+    del coded_sps_A_transposed
 
-    print('Saving...')
     with open('./datasets/my_voice/my_voice.p', 'wb') as f:
         pickle.dump((coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A), f)
 
+    del coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A
+
+    f0s_B, timeaxes_B, sps_B, aps_B, coded_sps_B = world_encode_data(wavs_B, fs=hp.rate, coded_dim=hp.num_mceps)
+    del wavs_B
+
+    log_f0s_mean_B, log_f0s_std_B = logf0_statistics(f0s_B)
+    del f0s_B
+    print('Log Pitch B')
+    print('Mean: %f, Std: %f' % (log_f0s_mean_B, log_f0s_std_B))
+
+    coded_sps_B_transposed = transpose_in_list(lst=coded_sps_B)
+    coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std = coded_sps_normalization_fit_transoform(
+        coded_sps=coded_sps_B_transposed)
+    del coded_sps_B_transposed
+
     with open('./datasets/target_voice/target_voice.p', 'wb') as f:
         pickle.dump((coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B), f)
+
+    del coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B
 
     print('Done')
