@@ -127,7 +127,9 @@ if __name__ == '__main__':
     print('Extracting acoustic features...')
 
     f0s_A, timeaxes_A, sps_A, aps_A, coded_sps_A = world_encode_data(wavs_A, fs=hp.rate, coded_dim=hp.num_mceps)
+    del wavs_A
     f0s_B, timeaxes_B, sps_B, aps_B, coded_sps_B = world_encode_data(wavs_B, fs=hp.rate, coded_dim=hp.num_mceps)
+    del wavs_B
 
     log_f0s_mean_A, log_f0s_std_A = logf0_statistics(f0s_A)
     log_f0s_mean_B, log_f0s_std_B = logf0_statistics(f0s_B)
