@@ -121,7 +121,7 @@ def pitch_conversion(f0, mean_log_src, std_log_src, mean_log_target, std_log_tar
 
 
 if __name__ == '__main__':
-    wavs_A = load_wavs('./datasets/my_voice')
+    wavs_A = load_wavs('./datasets/JSUT')
     wavs_B = load_wavs('./datasets/target_voice')
 
     print('Extracting acoustic features...')
@@ -139,7 +139,7 @@ if __name__ == '__main__':
         coded_sps=coded_sps_A_transposed)
     del coded_sps_A_transposed
 
-    with open('./datasets/my_voice/my_voice.p', 'wb') as f:
+    with open('./datasets/JSUT/jsut.p', 'wb') as f:
         pickle.dump((coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A), f)
 
     del coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A
