@@ -13,7 +13,7 @@ def load_wavs(wav_dir):
     wavs = []
     for i, file in enumerate(glob.glob(wav_dir + '/*.wav')):
         wav, _ = librosa.load(file, sr=hp.rate)
-        wav_index = librosa.effects.split(wav, top_db=50, ref=np.max)
+        wav_index = librosa.effects.split(wav, top_db=20, ref=np.max)
         wav_trimmed = list()
         for start, end in wav_index:
             wav_trimmed.append(wav[start:end])
