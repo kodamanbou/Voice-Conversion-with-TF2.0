@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 def load_wavs(wav_dir):
     wavs = []
-    for file in glob.glob(wav_dir + '/*.wav'):
+    for i, file in enumerate(glob.glob(wav_dir + '/*.wav')):
         wav, _ = librosa.load(file, sr=hp.rate)
         wav_index = librosa.effects.split(wav, top_db=50, ref=np.max)
         wav_trimmed = list()
@@ -21,13 +21,14 @@ def load_wavs(wav_dir):
         wav_trimmed = np.concatenate(wav_trimmed)
         wavs.append(wav_trimmed)
 
-        # plot
-        D = librosa.amplitude_to_db(np.abs(librosa.stft(wav_trimmed)), ref=np.max)
-        plt.figure(figsize=(12, 8))
-        plt.title(file)
-        display.specshow(D, x_axis='time', y_axis='log')
-        plt.colorbar(format='%+2.0f dB')
-        plt.show()
+        if i % 1000 == 0:
+            # plot
+            D = librosa.amplitude_to_db(np.abs(librosa.stft(wav_trimmed)), ref=np.max)
+            plt.figure(figsize=(12, 8))
+            plt.title(file)
+            display.specshow(D, x_axis='time', y_axis='log')
+            plt.colorbar(format='%+2.0f dB')
+            plt.show()
 
     return wavs
 
