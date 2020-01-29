@@ -4,6 +4,8 @@ import hyperparameter as hp
 import pyworld
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
+from librosa import display
 from tqdm import tqdm
 
 
@@ -11,7 +13,21 @@ def load_wavs(wav_dir):
     wavs = []
     for file in glob.glob(wav_dir + '/*.wav'):
         wav, _ = librosa.load(file, sr=hp.rate)
-        wavs.append(wav)
+        wav_index = librosa.effects.split(wav, top_db=50, ref=np.max)
+        wav_trimmed = list()
+        for start, end in wav_index:
+            wav_trimmed.append(wav[start:end])
+
+        wav_trimmed = np.concatenate(wav_trimmed)
+        wavs.append(wav_trimmed)
+
+        # plot
+        D = librosa.amplitude_to_db(np.abs(librosa.stft(wav_trimmed)), ref=np.max)
+        plt.figure(figsize=(12, 8))
+        plt.title(file)
+        display.specshow(D, x_axis='time', y_axis='log')
+        plt.colorbar(format='%+2.0f dB')
+        plt.show()
 
     return wavs
 
