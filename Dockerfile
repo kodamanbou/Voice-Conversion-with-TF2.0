@@ -19,5 +19,5 @@ WORKDIR ./Voice-Conversion-with-TF2.0
 
 RUN mkdir outputs
 RUN mkdir logdir
-RUN export TF_FORCE_GPU_ALLOW_GROWTH=true
+ENV TF_FORCE_GPU_ALLOW_GROWTH=true
 EXPOSE 6006:6006
