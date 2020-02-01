@@ -117,7 +117,7 @@ if __name__ == '__main__':
     disc_loss = tf.keras.metrics.Mean()
 
     print('Loading cached data...')
-    with open('./datasets/my_voice/my_voice.p', 'rb') as f:
+    with open('./datasets/JSUT/jsut.p', 'rb') as f:
         coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A = pickle.load(f)
 
     with open('./datasets/target_voice/target_voice.p', 'rb') as f:
