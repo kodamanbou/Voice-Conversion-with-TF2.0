@@ -3,7 +3,7 @@ import numpy as np
 
 
 def time_masking(wav, t):
-    num_frames = len(wav)
+    num_frames = wav.shape[0]
     assert t <= num_frames
     start = np.random.randint(0, num_frames - t)
     end = start + t
@@ -12,8 +12,9 @@ def time_masking(wav, t):
     return wav
 
 
-def frequency_masking(wav):
-    print()
+def frequency_masking(wav, f):
+    num_freqs = wav.shape[1]
+    assert f <= num_freqs
 
 
 def time_warping(wav):
