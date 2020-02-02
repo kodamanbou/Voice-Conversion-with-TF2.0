@@ -1,4 +1,5 @@
 logdir = 'logdir'
+weights_dir = 'weights'
 data_dir = 'datasets'
 rate = 22050
 batch_size = 1
