@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import pickle
 import os
+import datetime
 import hyperparameter as hp
 from utils import l1_loss, l2_loss
 from model import CycleGAN2
@@ -116,6 +117,10 @@ if __name__ == '__main__':
     gen_loss = tf.keras.metrics.Mean()
     disc_loss = tf.keras.metrics.Mean()
 
+    current_time = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+    logdir = os.path.join(hp.logdir, current_time)
+    summary_writer = tf.summary.create_file_writer(logdir)
+
     print('Loading cached data...')
     with open('./datasets/JSUT/jsut.p', 'rb') as f:
         coded_sps_A_norm, coded_sps_A_mean, coded_sps_A_std, log_f0s_mean_A, log_f0s_std_A = pickle.load(f)
@@ -124,7 +129,7 @@ if __name__ == '__main__':
         coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
     iteration = 1
-    epoch = 0
+    epoch = 1
     while iteration <= hp.num_iterations:
         dataset_A, dataset_B = sample_train_data(dataset_A=coded_sps_A_norm, dataset_B=coded_sps_B_norm)
         n_samples = dataset_A.shape[0]
@@ -138,10 +143,16 @@ if __name__ == '__main__':
                 hp.lambda_identity = 0
 
             if iteration % 2500 == 0:
-                model.save_weights(os.path.join(hp.logdir, 'weights_{:}'.format(iteration)))
+                model.save_weights(os.path.join(hp.weights_dir, 'weights_{:}'.format(iteration)))
 
             iteration += 1
 
-        epoch += 1
+        with summary_writer.as_default():
+            tf.summary.scalar('Generator loss', gen_loss.result(), step=epoch)
+            tf.summary.scalar('Discriminator loss', disc_loss.result(), step=epoch)
+
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
                                                                                disc_loss.result().numpy()))
+        gen_loss.reset_states()
+        disc_loss.reset_states()
+        epoch += 1
