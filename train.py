@@ -129,7 +129,7 @@ if __name__ == '__main__':
         coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
     iteration = 1
-    epoch = 1
+    epoch = 0
     while iteration <= hp.num_iterations:
         dataset_A, dataset_B = sample_train_data(dataset_A=coded_sps_A_norm, dataset_B=coded_sps_B_norm)
         n_samples = dataset_A.shape[0]
