@@ -1,9 +1,13 @@
 import tensorflow as tf
 import numpy as np
+import librosa
 import pickle
 import os
 import datetime
 import hyperparameter as hp
+from eval import seg_and_pad
+from preprocess import world_decompose, pitch_conversion, world_encode_spectral_envelop, world_decode_spectral_envelop, \
+    world_speech_synthesis
 from utils import l1_loss, l2_loss
 from model import CycleGAN2
 
@@ -108,6 +112,42 @@ def sample_train_data(dataset_A, dataset_B):
     return train_data_A, train_data_B
 
 
+def test():
+    wav, _ = librosa.load('./datasets/JSUT/BASIC5000_4994.wav', sr=hp.rate)
+    f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
+    f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
+    coded_sp = world_encode_spectral_envelop(sp, hp.rate, hp.num_mceps)
+    coded_sp_transposed = coded_sp.T
+    coded_sp_norm = (coded_sp_transposed - coded_sps_A_mean) / coded_sps_A_std
+    coded_sp_norm = seg_and_pad(coded_sp_norm, hp.n_frames)
+
+    wav_forms = []
+    for i, sp_norm in enumerate(coded_sp_norm):
+        sp_norm = np.expand_dims(sp_norm, axis=-1)
+        coded_sp_converted_norm = model([sp_norm, sp_norm], training=False)[1][0]
+        coded_sp_converted = coded_sp_converted_norm * coded_sps_B_std + coded_sps_B_mean
+        coded_sp_converted = np.array(coded_sp_converted, dtype=np.float64).T
+        coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
+        decode_sp_converted = world_decode_spectral_envelop(coded_sp_converted, hp.rate)
+        if len(f0) < (i + 1) * hp.output_size:
+            decode_sp_converted = decode_sp_converted[:len(f0) % hp.output_size]
+            f0_piece = f0_converted[i * hp.output_size:i * hp.output_size + len(f0) % hp.output_size]
+            ap_piece = ap[i * hp.output_size:i * hp.output_size + len(f0) % hp.output_size]
+            wav_transformed = world_speech_synthesis(f0_piece, decode_sp_converted, ap_piece, hp.rate, hp.duration)
+            wav_forms.append(wav_transformed)
+            break
+        else:
+            f0_piece = f0_converted[i * hp.output_size:(i + 1) * hp.output_size]
+            ap_piece = ap[i * hp.output_size:(i + 1) * hp.output_size]
+
+        wav_transformed = world_speech_synthesis(f0_piece, decode_sp_converted, ap_piece, hp.rate, hp.duration)
+        wav_forms.append(wav_transformed)
+
+    wav_forms = tf.convert_to_tensor(np.concatenate(wav_forms), dtype=tf.float64)
+
+    return wav_forms
+
+
 if __name__ == '__main__':
     # Training.
     model = CycleGAN2()
@@ -150,6 +190,9 @@ if __name__ == '__main__':
         with summary_writer.as_default():
             tf.summary.scalar('Generator loss', gen_loss.result(), step=epoch)
             tf.summary.scalar('Discriminator loss', disc_loss.result(), step=epoch)
+
+            val_wav = tf.expand_dims(test(), axis=0)
+            tf.summary.audio(f'epoch_{epoch}_generated', val_wav, sample_rate=hp.rate, step=epoch)
 
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
                                                                                disc_loss.result().numpy()))
