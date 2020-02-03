@@ -3,6 +3,7 @@ import numpy as np
 import librosa
 import pickle
 import os
+import glob
 import datetime
 import hyperparameter as hp
 from eval import seg_and_pad
@@ -112,8 +113,8 @@ def sample_train_data(dataset_A, dataset_B):
     return train_data_A, train_data_B
 
 
-def test():
-    wav, _ = librosa.load('./datasets/JSUT/BASIC5000_4994.wav', sr=hp.rate)
+def test(filename):
+    wav, _ = librosa.load(filename, sr=hp.rate)
     f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
     f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
     coded_sp = world_encode_spectral_envelop(sp, hp.rate, hp.num_mceps)
@@ -191,8 +192,9 @@ if __name__ == '__main__':
             tf.summary.scalar('Generator loss', gen_loss.result(), step=epoch)
             tf.summary.scalar('Discriminator loss', disc_loss.result(), step=epoch)
 
-            val_wav = tf.expand_dims(test(), axis=0)
-            tf.summary.audio(f'epoch_{epoch}_generated', val_wav, sample_rate=hp.rate, step=epoch)
+            file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
+            val_wav = tf.expand_dims(test(file), axis=0)
+            tf.summary.audio(f'epoch_{epoch}_{file}', val_wav, sample_rate=hp.rate, step=epoch)
 
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
                                                                                disc_loss.result().numpy()))
