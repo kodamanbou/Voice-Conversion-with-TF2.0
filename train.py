@@ -112,6 +112,7 @@ def sample_train_data(dataset_A, dataset_B):
     return train_data_A, train_data_B
 
 
+@tf.function
 def test(filename):
     wav, _ = librosa.load(filename, sr=hp.rate)
     f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
@@ -198,12 +199,12 @@ if __name__ == '__main__':
 
             iteration += 1
 
+        file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
+        val_wav = tf.expand_dims(test(file), axis=0)
+
         with summary_writer.as_default():
             tf.summary.scalar('Generator loss', gen_loss.result(), step=epoch)
             tf.summary.scalar('Discriminator loss', disc_loss.result(), step=epoch)
-
-            file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
-            val_wav = tf.expand_dims(test(file), axis=0)
             tf.summary.audio(f'epoch_{epoch}_{file}', val_wav, sample_rate=hp.rate, step=epoch)
 
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
