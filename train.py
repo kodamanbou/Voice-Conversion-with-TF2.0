@@ -6,7 +6,6 @@ import os
 import glob
 import datetime
 import hyperparameter as hp
-from eval import seg_and_pad
 from preprocess import world_decompose, pitch_conversion, world_encode_spectral_envelop, world_decode_spectral_envelop, \
     world_speech_synthesis
 from utils import l1_loss, l2_loss
@@ -147,6 +146,17 @@ def test(filename):
     wav_forms = tf.convert_to_tensor(np.concatenate(wav_forms), dtype=tf.float64)
 
     return wav_forms
+
+
+def seg_and_pad(src, n_frames):
+    n_origin = src.shape[1]
+    n_padded = (n_origin // n_frames + 1) * n_frames
+    left_pad = (n_padded - n_origin) // 2
+    right_pad = n_padded - n_origin - left_pad
+    src = np.pad(src, [(0, 0), (left_pad, right_pad)], 'constant', constant_values=0)
+    src = np.reshape(src, [-1, hp.num_mceps, n_frames])
+
+    return src
 
 
 if __name__ == '__main__':
