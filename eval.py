@@ -33,7 +33,7 @@ with open('./datasets/JSUT/jsut.p', 'rb') as f:
 with open('./datasets/target_voice/target_voice.p', 'rb') as f:
     coded_sps_B_norm, coded_sps_B_mean, coded_sps_B_std, log_f0s_mean_B, log_f0s_std_B = pickle.load(f)
 
-wav, _ = librosa.load('./datasets/JSUT/BASIC5000_4994.wav', sr=hp.rate)
+wav, _ = librosa.load('./datasets/JSUT/BASIC5000_0001.wav', sr=hp.rate)
 f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
 f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
 coded_sp = world_encode_spectral_envelop(sp, hp.rate, hp.num_mceps)
