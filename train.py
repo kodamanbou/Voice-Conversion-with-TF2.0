@@ -112,6 +112,61 @@ def sample_train_data(dataset_A, dataset_B):
     return train_data_A, train_data_B
 
 
+def seg_and_pad(src, n_frames):
+    n_origin = src.shape[1]
+    n_padded = (n_origin // n_frames + 1) * n_frames
+    left_pad = (n_padded - n_origin) // 2
+    right_pad = n_padded - n_origin - left_pad
+    src = np.pad(src, [(0, 0), (left_pad, right_pad)], 'constant', constant_values=0)
+    src = np.reshape(src, [-1, hp.num_mceps, n_frames])
+
+    return src
+
+
+@tf.function
+def infer(spectral):
+    coded_sp_converted = model([spectral, spectral], training=False)[1][0]
+
+    return coded_sp_converted
+
+
+def test(filename):
+    wav, _ = librosa.load(filename, sr=hp.rate)
+    f0, timeaxis, sp, ap = world_decompose(wav, hp.rate)
+    f0_converted = pitch_conversion(f0, log_f0s_mean_A, log_f0s_std_A, log_f0s_mean_B, log_f0s_std_B)
+    coded_sp = world_encode_spectral_envelop(sp, hp.rate, hp.num_mceps)
+    coded_sp_transposed = coded_sp.T
+    coded_sp_norm = (coded_sp_transposed - coded_sps_A_mean) / coded_sps_A_std
+    coded_sp_norm = seg_and_pad(coded_sp_norm, hp.n_frames)
+
+    wav_forms = []
+    for i, sp_norm in enumerate(coded_sp_norm):
+        sp_norm = np.expand_dims(sp_norm, axis=-1)
+        coded_sp_converted_norm = infer(sp_norm)
+        coded_sp_converted = coded_sp_converted_norm * coded_sps_B_std + coded_sps_B_mean
+        coded_sp_converted = np.array(coded_sp_converted, dtype=np.float64).T
+        coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
+        decode_sp_converted = world_decode_spectral_envelop(coded_sp_converted, hp.rate)
+        if len(f0) < (i + 1) * hp.output_size:
+            decode_sp_converted = decode_sp_converted[:len(f0) % hp.output_size]
+            f0_piece = f0_converted[i * hp.output_size:i * hp.output_size + len(f0) % hp.output_size]
+            ap_piece = ap[i * hp.output_size:i * hp.output_size + len(f0) % hp.output_size]
+            wav_transformed = world_speech_synthesis(f0_piece, decode_sp_converted, ap_piece, hp.rate, hp.duration)
+            wav_forms.append(wav_transformed)
+            break
+        else:
+            f0_piece = f0_converted[i * hp.output_size:(i + 1) * hp.output_size]
+            ap_piece = ap[i * hp.output_size:(i + 1) * hp.output_size]
+
+        wav_transformed = world_speech_synthesis(f0_piece, decode_sp_converted, ap_piece, hp.rate, hp.duration)
+        wav_forms.append(wav_transformed)
+
+    wav_forms = np.concatenate(wav_forms)
+    wav_forms = np.expand_dims(wav_forms, axis=[-1, 0])
+
+    return wav_forms
+
+
 if __name__ == '__main__':
     # Training.
     model = CycleGAN2()
@@ -151,9 +206,13 @@ if __name__ == '__main__':
 
             iteration += 1
 
+        file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
+        eval_wav = test(file[0])
+
         with summary_writer.as_default():
             tf.summary.scalar('Generator loss', gen_loss.result(), step=epoch)
             tf.summary.scalar('Discriminator loss', disc_loss.result(), step=epoch)
+            tf.summary.audio(f'generated_target_epoch_{epoch}', eval_wav, sample_rate=hp.rate, step=epoch)
 
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
                                                                                disc_loss.result().numpy()))
