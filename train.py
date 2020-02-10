@@ -206,13 +206,14 @@ if __name__ == '__main__':
 
             iteration += 1
 
-        file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
-        eval_wav = test(file[0])
-
         with summary_writer.as_default():
             tf.summary.scalar('Generator loss', gen_loss.result(), step=epoch)
             tf.summary.scalar('Discriminator loss', disc_loss.result(), step=epoch)
-            tf.summary.audio(f'generated_target_epoch_{epoch}', eval_wav, sample_rate=hp.rate, step=epoch)
+
+            if epoch % 10 == 0:
+                file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
+                eval_wav = test(file[0])
+                tf.summary.audio(f'generated_target_epoch_{epoch}', eval_wav, sample_rate=hp.rate, step=epoch)
 
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
                                                                                disc_loss.result().numpy()))
