@@ -11,7 +11,7 @@ num_mceps = 36
 duration = 5.0
 n_frames = 128
 output_size = 512
-num_iterations = 400000
+num_iterations = 2400000
 
 # data augmentation.
 n_mask_frames = 8
