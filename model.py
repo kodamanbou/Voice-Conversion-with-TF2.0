@@ -105,23 +105,16 @@ class Generator(tf.keras.Model):
 class PatchGanDiscriminator(tf.keras.Model):
     def __init__(self):
         super(PatchGanDiscriminator, self).__init__()
-        self.h1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), padding='same', activation=tf.nn.leaky_relu,
-                                         name='h1_conv')
-        self.h1_gates = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), padding='same', activation=tf.nn.leaky_relu,
-                                               name='h1_conv_gates')
+        self.h1 = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), padding='same', name='h1_conv')
+        self.h1_gates = tf.keras.layers.Conv2D(128, kernel_size=(3, 3), padding='same', name='h1_conv_gates')
         self.h1_glu = tf.keras.layers.Multiply(name='h1_glu')
 
-        self.d1 = Downsample2DBlock(256, kernel_size=(3, 3), strides=2, activation=tf.nn.leaky_relu,
-                                    name_prefix='downsample2d_block1_')
-        self.d2 = Downsample2DBlock(512, kernel_size=(3, 3), strides=2, activation=tf.nn.leaky_relu,
-                                    name_prefix='downsample2d_block2_')
-        self.d3 = Downsample2DBlock(1024, kernel_size=(3, 3), strides=2, activation=tf.nn.leaky_relu,
-                                    name_prefix='downsample2d_block3_')
-        self.d4 = Downsample2DBlock(1024, kernel_size=(1, 5), strides=1, activation=tf.nn.leaky_relu,
-                                    name_prefix='downsample2d_block4_')
+        self.d1 = Downsample2DBlock(256, kernel_size=(3, 3), strides=2, name_prefix='downsample2d_block1_')
+        self.d2 = Downsample2DBlock(512, kernel_size=(3, 3), strides=2, name_prefix='downsample2d_block2_')
+        self.d3 = Downsample2DBlock(1024, kernel_size=(3, 3), strides=2, name_prefix='downsample2d_block3_')
+        self.d4 = Downsample2DBlock(1024, kernel_size=(1, 5), strides=1, name_prefix='downsample2d_block4_')
 
-        self.out = tf.keras.layers.Conv2D(1, kernel_size=(1, 3), strides=1, padding='same', activation=tf.nn.leaky_relu,
-                                          name='out_conv')
+        self.out = tf.keras.layers.Conv2D(1, kernel_size=(1, 3), strides=1, padding='same', name='out_conv')
 
     def __call__(self, inputs, training=None, mask=None):
         inputs = tf.expand_dims(inputs, axis=-1)  # [N, M, T, 1]
