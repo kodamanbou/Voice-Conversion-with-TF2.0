@@ -213,7 +213,8 @@ if __name__ == '__main__':
             if epoch % 10 == 0:
                 file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
                 eval_wav = test(file[0])
-                tf.summary.audio(f'generated_target_{file[0]}_epoch_{epoch}', eval_wav, sample_rate=hp.rate, step=epoch)
+                tf.summary.audio(f'generated_target_{file[0].split("/")[-1]}_epoch_{epoch}', eval_wav,
+                                 sample_rate=hp.rate, step=epoch)
 
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
                                                                                disc_loss.result().numpy()))
