@@ -162,7 +162,8 @@ def test(filename):
         wav_forms.append(wav_transformed)
 
     wav_forms = np.concatenate(wav_forms)
-    wav_forms = np.expand_dims(wav_forms, axis=[-1, 0])
+    wav_forms = np.expand_dims(wav_forms, axis=-1)
+    wav_forms = np.expand_dims(wav_forms, axis=0)
 
     return wav_forms
 
@@ -213,7 +214,7 @@ if __name__ == '__main__':
             if epoch % 10 == 0:
                 file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
                 eval_wav = test(file[0])
-                tf.summary.audio(f'generated_target_{file[0].split("/")[-1]}_epoch_{epoch}', eval_wav,
+                tf.summary.audio(f'generated_target_{file[0].rsplit(".")[-2]}_epoch_{epoch}', eval_wav,
                                  sample_rate=hp.rate, step=epoch)
 
         print('Epoch: {} \tGenerator loss: {} \tDiscriminator loss: {}'.format(epoch, gen_loss.result().numpy(),
