@@ -1,6 +1,6 @@
 import librosa
 import glob
-import hyperparameter as hp
+from hyperparameter import Hyperparameter as hp
 import pyworld
 import numpy as np
 import pickle

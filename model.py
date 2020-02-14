@@ -1,6 +1,6 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
-import hyperparameter as hp
+from hyperparameter import Hyperparameter as hp
 
 
 class CycleGAN2(tf.keras.Model):

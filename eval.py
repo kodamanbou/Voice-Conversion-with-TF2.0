@@ -6,7 +6,7 @@ import librosa
 from librosa import display
 import matplotlib.pyplot as plt
 from model import CycleGAN2
-import hyperparameter as hp
+from hyperparameter import Hyperparameter as hp
 from preprocess import pitch_conversion, world_speech_synthesis
 from preprocess import world_decompose, world_encode_spectral_envelop, world_decode_spectral_envelop
 

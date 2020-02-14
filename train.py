@@ -1,11 +1,14 @@
 import tensorflow as tf
 import numpy as np
 import librosa
+from librosa import display
+import matplotlib.pyplot as plt
 import pickle
 import os
+import io
 import glob
 import datetime
-import hyperparameter as hp
+from hyperparameter import Hyperparameter as hp
 from preprocess import world_decompose, pitch_conversion, world_encode_spectral_envelop, world_decode_spectral_envelop, \
     world_speech_synthesis
 from utils import l1_loss, l2_loss
@@ -168,12 +171,42 @@ def test(filename):
     return wav_forms
 
 
+def plot_to_image(figure):
+    """Converts the matplotlib plot specified by 'figure' to a PNG image and
+    returns it. The supplied figure is closed and inaccessible after this call."""
+    # Save the plot to a PNG in memory.
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close(figure)
+    buf.seek(0)
+    # Convert PNG buffer to TF image
+    image = tf.image.decode_png(buf.getvalue(), channels=4)
+    # Add the batch dimension
+    image = tf.expand_dims(image, 0)
+
+    return image
+
+
+def plot_spec(y):
+    figure = plt.figure(figsize=(12, 8))
+    D = librosa.amplitude_to_db(np.abs(librosa.stft(y)), ref=np.max)
+    display.specshow(D, y_axis='log')
+    plt.colorbar(format='%+2.0f dB')
+    plt.title('Log-frequency power spectrogram')
+    plt.tight_layout()
+
+    return figure
+
+
 if __name__ == '__main__':
     # Training.
     model = CycleGAN2()
 
-    discriminator_optimizer = tf.optimizers.Adam(learning_rate=hp.discriminator_lr)
-    generator_optimizer = tf.optimizers.Adam(learning_rate=hp.generator_lr)
+    disc_lr = tf.keras.optimizers.schedules.PolynomialDecay(hp.discriminator_lr, hp.num_iterations,
+                                                            end_learning_rate=1e-10)
+    gen_lr = tf.keras.optimizers.schedules.PolynomialDecay(hp.generator_lr, hp.num_iterations, end_learning_rate=1e-10)
+    discriminator_optimizer = tf.optimizers.Adam(learning_rate=disc_lr)
+    generator_optimizer = tf.optimizers.Adam(learning_rate=gen_lr)
     gen_loss = tf.keras.metrics.Mean()
     disc_loss = tf.keras.metrics.Mean()
 
@@ -214,6 +247,9 @@ if __name__ == '__main__':
             if epoch % 10 == 0:
                 file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
                 eval_wav = test(file[0])
+                fig = plot_spec(eval_wav)
+                img = plot_to_image(fig)
+                tf.summary.image(f'Spectral_epoch_{epoch}', img, step=epoch)
                 tf.summary.audio(f'generated_target_{file[0].rsplit(".")[-2]}_epoch_{epoch}', eval_wav,
                                  sample_rate=hp.rate, step=epoch)
 
