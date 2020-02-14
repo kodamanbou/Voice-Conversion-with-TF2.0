@@ -247,7 +247,7 @@ if __name__ == '__main__':
             if epoch % 10 == 0:
                 file = np.random.choice(glob.glob('./datasets/JSUT/*.wav'), 1)
                 eval_wav = test(file[0])
-                fig = plot_spec(eval_wav)
+                fig = plot_spec(eval_wav.reshape(-1))
                 img = plot_to_image(fig)
                 tf.summary.image(f'Spectral_epoch_{epoch}', img, step=epoch)
                 tf.summary.audio(f'generated_target_{file[0].rsplit(".")[-2]}_epoch_{epoch}', eval_wav,
