@@ -232,7 +232,7 @@ if __name__ == '__main__':
             end = (i + 1) * hp.batch_size
             train_step([dataset_A[start:end], dataset_B[start:end]])
 
-            if iteration > 144000:
+            if iteration > 10000:
                 hp.lambda_identity = 0
 
             if iteration % 2500 == 0:
