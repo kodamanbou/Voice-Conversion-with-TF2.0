@@ -201,8 +201,8 @@ def plot_spec(y):
 if __name__ == '__main__':
     # Training.
     model = CycleGAN2()
-    discriminator_optimizer = tf.optimizers.Adam(learning_rate=hp.discriminator_lr)
-    generator_optimizer = tf.optimizers.Adam(learning_rate=hp.generator_lr)
+    discriminator_optimizer = tf.optimizers.Adam(learning_rate=hp.discriminator_lr, beta_1=0.5)
+    generator_optimizer = tf.optimizers.Adam(learning_rate=hp.generator_lr, beta_1=0.5)
     gen_loss = tf.keras.metrics.Mean()
     disc_loss = tf.keras.metrics.Mean()
 
