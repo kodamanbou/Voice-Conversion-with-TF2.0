@@ -201,12 +201,8 @@ def plot_spec(y):
 if __name__ == '__main__':
     # Training.
     model = CycleGAN2()
-
-    disc_lr = tf.keras.optimizers.schedules.PolynomialDecay(hp.discriminator_lr, hp.num_iterations,
-                                                            end_learning_rate=1e-10)
-    gen_lr = tf.keras.optimizers.schedules.PolynomialDecay(hp.generator_lr, hp.num_iterations, end_learning_rate=1e-10)
-    discriminator_optimizer = tf.optimizers.Adam(learning_rate=disc_lr)
-    generator_optimizer = tf.optimizers.Adam(learning_rate=gen_lr)
+    discriminator_optimizer = tf.optimizers.Adam(learning_rate=hp.discriminator_lr)
+    generator_optimizer = tf.optimizers.Adam(learning_rate=hp.generator_lr)
     gen_loss = tf.keras.metrics.Mean()
     disc_loss = tf.keras.metrics.Mean()
 
